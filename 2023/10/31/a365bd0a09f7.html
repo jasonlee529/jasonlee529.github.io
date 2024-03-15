@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.0.0">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.css" integrity="sha256-vQkngPS8jiHHH0I6ABTZroZk8NPZ7b+MUReOFE9UsXQ=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"jasonlee529.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="根据 cookie 进行 gateway 路由01.01-根据 cookie 进行 gateway 路由 1. 设计参与角色：gateway, service-provider   2. 实现2.1 LoadBalancer 实现类，参照 RoundRibonLoadBalancer 实现。功能：跟进前端的 cookie 中的 zone，来匹配 nacos 注册信息中 metadata(元数据）的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringCloud根据cookie进行gateway路由">
+<meta property="og:url" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7.html">
+<meta property="og:site_name" content="Jason Lee Essay">
+<meta property="og:description" content="根据 cookie 进行 gateway 路由01.01-根据 cookie 进行 gateway 路由 1. 设计参与角色：gateway, service-provider   2. 实现2.1 LoadBalancer 实现类，参照 RoundRibonLoadBalancer 实现。功能：跟进前端的 cookie 中的 zone，来匹配 nacos 注册信息中 metadata(元数据）的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/Vsr6b56CQooO1bxoNP5c3yoKnOg.jpeg">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/BXjxbdK5Roy0fExTwWsc5I5Ynbd.jpeg">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/J7zBb9g1CootMWxM27Yc86pdnGg.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/YjBvbpIC4oJpT3xs33BcIj5ansf.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/BAwwbIqnxo1QQpxbwincCvW5n8d.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/IQsJb3VmaoBQnQxVoADc8FGgnsf.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/VENrbv8RcoWCgUx0UkBcDJkpnIg.png">
+<meta property="article:published_time" content="2023-10-31T06:07:27.000Z">
+<meta property="article:modified_time" content="2024-03-15T05:34:14.624Z">
+<meta property="article:author" content="Jason Lee">
+<meta property="article:tag" content="SpringCloud">
+<meta property="article:tag" content="SpringCloud GateWay">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7/static/Vsr6b56CQooO1bxoNP5c3yoKnOg.jpeg">
+
+
+<link rel="canonical" href="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://jasonlee529.github.io/2023/10/31/a365bd0a09f7.html","path":"2023/10/31/a365bd0a09f7.html","title":"SpringCloud根据cookie进行gateway路由"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SpringCloud根据cookie进行gateway路由 | Jason Lee Essay</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?69f02f078fd202b54793c69f3596a63f 69f02f078fd202b54793c69f3596a63f"></script>
+
+
+
+
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1336715083812391"
+     crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-1336715083812391">
+<meta name="google-site-verification" content="DCecPF2mdIv3j__CgHKZ7KkdHn9F-6f4Grk8xYgVklE" />
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Jason Lee Essay</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Only dead fish go with the flow!</p>
+      <img class="custom-logo-image" src="/img/20221112195403.jpg" alt="Jason Lee Essay">
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories" rel="section">分类</a></li><li class="menu-item menu-item-about"><a href="/about" rel="section">关于</a></li><li class="menu-item menu-item-archives"><a href="/archives" rel="section">归档</a></li><li class="menu-item menu-item-tags"><a href="/tags" rel="section">标签</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%B9%E6%8D%AE-cookie-%E8%BF%9B%E8%A1%8C-gateway-%E8%B7%AF%E7%94%B1"><span class="nav-number">1.</span> <span class="nav-text">根据 cookie 进行 gateway 路由</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">1. 设计</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">2. 实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-LoadBalancer-%E5%AE%9E%E7%8E%B0%E7%B1%BB%EF%BC%8C%E5%8F%82%E7%85%A7-RoundRibonLoadBalancer-%E5%AE%9E%E7%8E%B0%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 LoadBalancer 实现类，参照 RoundRibonLoadBalancer 实现。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-LoadBalancerConfiguration-%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 LoadBalancerConfiguration 配置类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E5%90%AF%E5%8A%A8%E6%96%B9%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 启动方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-%E6%95%88%E6%9E%9C"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 效果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-1-zone-V1"><span class="nav-number">3.4.1.</span> <span class="nav-text">2.4.1 zone&#x3D;V1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-2-zone-V2"><span class="nav-number">3.4.2.</span> <span class="nav-text">2.4.2 zone&#x3D;V2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-3-zone-null"><span class="nav-number">3.4.3.</span> <span class="nav-text">2.4.3 zone&#x3D;null</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jason Lee"
+      src="/img/1491256964.jpg">
+  <p class="site-author-name" itemprop="name">Jason Lee</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives">
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories">
+        <span class="site-state-item-count">49</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags">
+        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jasonlee529" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jasonlee529" rel="noopener me" target="_blank">GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.cnblogs.com/jason0529/" title="博客园 → http:&#x2F;&#x2F;www.cnblogs.com&#x2F;jason0529&#x2F;" rel="noopener me" target="_blank">博客园</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jasonlee529.github.io/2023/10/31/a365bd0a09f7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/1491256964.jpg">
+      <meta itemprop="name" content="Jason Lee">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="SpringCloud根据cookie进行gateway路由 | Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringCloud根据cookie进行gateway路由
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-10-31 14:07:27" itemprop="dateCreated datePublished" datetime="2023-10-31T14:07:27+08:00">2023-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Spring/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Spring/SpringCloud/SpringCloudGateway/" itemprop="url" rel="index"><span itemprop="name">SpringCloudGateway</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="firestore-visitors-count"></span>
+    </span>
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>529</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="根据-cookie-进行-gateway-路由"><a href="#根据-cookie-进行-gateway-路由" class="headerlink" title="根据 cookie 进行 gateway 路由"></a>根据 cookie 进行 gateway 路由</h1><p><strong>01.01-根据 cookie 进行 gateway 路由</strong></p>
+<h1 id="1-设计"><a href="#1-设计" class="headerlink" title="1. 设计"></a>1. <strong>设计</strong></h1><p>参与角色：gateway, service-provider</p>
+<p><img src="/2023/10/31/a365bd0a09f7/static/Vsr6b56CQooO1bxoNP5c3yoKnOg.jpeg"></p>
+<p><img src="/2023/10/31/a365bd0a09f7/static/BXjxbdK5Roy0fExTwWsc5I5Ynbd.jpeg"></p>
+<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2. 实现"></a>2. <strong>实现</strong></h1><h2 id="2-1-LoadBalancer-实现类，参照-RoundRibonLoadBalancer-实现。"><a href="#2-1-LoadBalancer-实现类，参照-RoundRibonLoadBalancer-实现。" class="headerlink" title="2.1 LoadBalancer 实现类，参照 RoundRibonLoadBalancer 实现。"></a>2.1 <strong>LoadBalancer 实现类，参照 RoundRibonLoadBalancer 实现。</strong></h2><p>功能：跟进前端的 cookie 中的 zone，来匹配 nacos 注册信息中 metadata(元数据）的 version。进行匹配。</p>
+<p>其他完全根据 gateway 的路由完成。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.alibaba.cloud.examples.loadbalancer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.cloud.commons.lang.StringUtils;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Random;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"><span class="keyword">import</span> java.util.stream.Collectors;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.ObjectProvider;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.ServiceInstance;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.DefaultResponse;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.EmptyResponse;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.Request;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.RequestDataContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.Response;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.NoopServiceInstanceListSupplier;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.ReactorServiceInstanceLoadBalancer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.SelectedInstanceCallback;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;</span><br><span class="line"><span class="keyword">import</span> reactor.core.publisher.Mono;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span> : MyLoadBalancer</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: :</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>: libo@juzishuke.com</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span>: 2023/9/11 16:51</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span>:1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">//@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyLoadBalancer</span> <span class="keyword">implements</span> <span class="title class_">ReactorServiceInstanceLoadBalancer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">log</span> <span class="operator">=</span> LogFactory.getLog(MyLoadBalancer.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> AtomicInteger position;</span><br><span class="line">    <span class="keyword">final</span> String        serviceId;</span><br><span class="line">    ObjectProvider&lt;ServiceInstanceListSupplier&gt; serviceInstanceListSupplierProvider;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyLoadBalancer</span><span class="params">(</span></span><br><span class="line"><span class="params">            ObjectProvider&lt;ServiceInstanceListSupplier&gt; serviceInstanceListSupplierProvider,</span></span><br><span class="line"><span class="params">            String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(serviceInstanceListSupplierProvider, name, <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">1000</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyLoadBalancer</span><span class="params">(</span></span><br><span class="line"><span class="params">            ObjectProvider&lt;ServiceInstanceListSupplier&gt; serviceInstanceListSupplierProvider,</span></span><br><span class="line"><span class="params">            String name, <span class="type">int</span> seedPosition)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.serviceId = name;</span><br><span class="line">        <span class="built_in">this</span>.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;</span><br><span class="line">        <span class="built_in">this</span>.position = <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(seedPosition);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Mono&lt;Response&lt;ServiceInstance&gt;&gt; <span class="title function_">choose</span><span class="params">(Request request)</span> &#123;</span><br><span class="line">        <span class="type">ServiceInstanceListSupplier</span> <span class="variable">supplier</span> <span class="operator">=</span> serviceInstanceListSupplierProvider.getIfAvailable(</span><br><span class="line">                NoopServiceInstanceListSupplier::<span class="keyword">new</span>);</span><br><span class="line">        <span class="keyword">return</span> supplier.get(request).next()</span><br><span class="line">                .map(serviceInstances -&gt; processInstanceResponse(request, supplier,</span><br><span class="line">                        serviceInstances));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title function_">processInstanceResponse</span><span class="params">(Request request,</span></span><br><span class="line"><span class="params">            ServiceInstanceListSupplier supplier, List&lt;ServiceInstance&gt; serviceInstances)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">zone</span> <span class="operator">=</span> ((RequestDataContext) request.getContext()).getClientRequest().getCookies()</span><br><span class="line">                .getFirst(<span class="string">&quot;zone&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isNotBlank(zone)) &#123;</span><br><span class="line">            serviceInstances = serviceInstances.stream()</span><br><span class="line">                    .filter(e -&gt; zone.equalsIgnoreCase(e.getMetadata().get(<span class="string">&quot;version&quot;</span>))).collect(Collectors.toList());</span><br><span class="line">        &#125;</span><br><span class="line">        Response&lt;ServiceInstance&gt; serviceInstanceResponse = getInstanceResponse(request,</span><br><span class="line">                serviceInstances);</span><br><span class="line">        <span class="keyword">if</span> (supplier <span class="keyword">instanceof</span> SelectedInstanceCallback &amp;&amp; serviceInstanceResponse.hasServer()) &#123;</span><br><span class="line">            ((SelectedInstanceCallback) supplier).selectedServiceInstance(</span><br><span class="line">                    serviceInstanceResponse.getServer());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> serviceInstanceResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title function_">getInstanceResponse</span><span class="params">(Request request,</span></span><br><span class="line"><span class="params">            List&lt;ServiceInstance&gt; instances)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (instances.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (log.isWarnEnabled()) &#123;</span><br><span class="line">                log.warn(<span class="string">&quot;No servers available for service: &quot;</span> + serviceId);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">EmptyResponse</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Do not move position when there is only 1 instance, especially some suppliers</span></span><br><span class="line">        <span class="comment">// have already filtered instances</span></span><br><span class="line">        <span class="keyword">if</span> (instances.size() == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultResponse</span>(instances.get(<span class="number">0</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Ignore the sign bit, this allows pos to loop sequentially from 0 to</span></span><br><span class="line">        <span class="comment">// Integer.MAX_VALUE</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">pos</span> <span class="operator">=</span> <span class="built_in">this</span>.position.incrementAndGet() &amp; Integer.MAX_VALUE;</span><br><span class="line"></span><br><span class="line">        <span class="type">ServiceInstance</span> <span class="variable">instance</span> <span class="operator">=</span> instances.get(pos % instances.size());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultResponse</span>(instance);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-LoadBalancerConfiguration-配置类"><a href="#2-2-LoadBalancerConfiguration-配置类" class="headerlink" title="2.2 LoadBalancerConfiguration 配置类"></a>2.2 <strong>LoadBalancerConfiguration 配置类</strong></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.alibaba.cloud.examples.config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.cloud.examples.loadbalancer.MyLoadBalancer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.ServiceInstance;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.ReactorLoadBalancer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.env.Environment;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span> : LoadBalancerConfiguration</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: :</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>: libo@juzishuke.com</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span>: 2023/9/11 17:16</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span>:1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration(proxyBeanMethods = false)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoadBalancerConfiguration</span> &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> ReactorLoadBalancer&lt;ServiceInstance&gt; <span class="title function_">reactorServiceInstanceLoadBalancer</span><span class="params">(</span></span><br><span class="line"><span class="params">            Environment environment, LoadBalancerClientFactory loadBalancerClientFactory)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> environment.getProperty(LoadBalancerClientFactory.PROPERTY_NAME);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">MyLoadBalancer</span>(</span><br><span class="line">                loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier.class),</span><br><span class="line">                name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-启动方法"><a href="#2-3-启动方法" class="headerlink" title="2.3 启动方法"></a>2.3 <strong>启动方法</strong></h2><p>在 service-provider 类上面添加启动参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Dserver.port=0 -Dspring.cloud.nacos.discovery.metadata.version=v2</span><br></pre></td></tr></table></figure>
+
+<p>-Dserver.port&#x3D;0 标识随机端口</p>
+<p>-Dspring.cloud.nacos.discovery.metadata.version&#x3D;xxx 标识 snacos 注册的元数据特殊值</p>
+<h2 id="2-4-效果"><a href="#2-4-效果" class="headerlink" title="2.4 效果"></a>2.4 <strong>效果</strong></h2><p><img src="/2023/10/31/a365bd0a09f7/static/J7zBb9g1CootMWxM27Yc86pdnGg.png"></p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>实例端口</th>
+<th>meta.version</th>
+<th>zone&#x3D;V1</th>
+<th>zone&#x3D;V2</th>
+<th>zone&#x3D;null</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>gateway</td>
+<td>18085</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>service-provider</td>
+<td>18086</td>
+<td>V1</td>
+<td>Y</td>
+<td>N</td>
+<td>N</td>
+</tr>
+<tr>
+<td>service-provider</td>
+<td>18087</td>
+<td>V2</td>
+<td>N</td>
+<td>P</td>
+<td>N</td>
+</tr>
+<tr>
+<td>service-provider</td>
+<td>18088</td>
+<td>V2</td>
+<td>N</td>
+<td>P</td>
+<td>N</td>
+</tr>
+<tr>
+<td>service-provider</td>
+<td>18089</td>
+<td></td>
+<td>N</td>
+<td>N</td>
+<td>Y</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-1-zone-V1"><a href="#2-4-1-zone-V1" class="headerlink" title="2.4.1 zone&#x3D;V1"></a>2.4.1 <strong>zone&#x3D;V1</strong></h3><p><img src="/2023/10/31/a365bd0a09f7/static/YjBvbpIC4oJpT3xs33BcIj5ansf.png"></p>
+<h3 id="2-4-2-zone-V2"><a href="#2-4-2-zone-V2" class="headerlink" title="2.4.2 zone&#x3D;V2"></a>2.4.2 <strong>zone&#x3D;V2</strong></h3><p>第 1 次请求</p>
+<p><img src="/2023/10/31/a365bd0a09f7/static/BAwwbIqnxo1QQpxbwincCvW5n8d.png"></p>
+<p>第 2 次请求</p>
+<p><img src="/2023/10/31/a365bd0a09f7/static/IQsJb3VmaoBQnQxVoADc8FGgnsf.png"></p>
+<h3 id="2-4-3-zone-null"><a href="#2-4-3-zone-null" class="headerlink" title="2.4.3 zone&#x3D;null"></a>2.4.3 <strong>zone&#x3D;null</strong></h3><p><img src="/2023/10/31/a365bd0a09f7/static/VENrbv8RcoWCgUx0UkBcDJkpnIg.png"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/img/wechat.png" alt="Jason Lee 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/img/alipay.jpg" alt="Jason Lee 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class=""></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/img/wechat_sub.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/SpringCloud/" rel="tag"># SpringCloud</a>
+              <a href="/tags/SpringCloud-GateWay/" rel="tag"># SpringCloud GateWay</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/12/25/09927113e423.html" rel="prev" title="Mysql的联合索引-最左匹配的隐藏规则">
+                  <i class="fa fa-angle-left"></i> Mysql的联合索引-最左匹配的隐藏规则
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/10/31/1ef1bddf5779.html" rel="next" title="SpringCloud配置中心优先级">
+                  SpringCloud配置中心优先级 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Jason Lee</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">40k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/jasonlee529" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.umd.js" integrity="sha256-oyhjPiYRWGXaAt+ny/mTMWOnN1GBoZDUQnzzgC7FRI4=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.5.0/mermaid.min.js","integrity":"sha256-K7oJiQlDulzl24ZUFOywuYme1JqBBvQzK6m8qHjt9Gk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-app-compat.js" integrity="sha256-kv9gfd+UUnUqqJ2d478LEHzOijuUbZOVdEkuXSMm4qM=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-firestore-compat.js" integrity="sha256-sS/hkEB7nn47hhc//PNKfXiRX2YMEe4rBqUIqEhMYA8=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="firestore" type="application/json">{"enable":true,"collection":"articles","apiKey":"AIzaSyCtIjc1ac9LEqDrmHibIZuxSJUEcC-dk3Y","projectId":"hexo-jason529"}</script>
+  <script src="/js/third-party/statistics/firestore.js"></script>
+
+
+
+
+</body>
+</html>

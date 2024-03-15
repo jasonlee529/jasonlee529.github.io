@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.0.0">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.css" integrity="sha256-vQkngPS8jiHHH0I6ABTZroZk8NPZ7b+MUReOFE9UsXQ=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"jasonlee529.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="雪花 id 是一个 64bit 的 long 型 id。 snowflake 是 Twitter 开源的分布式 ID 生成算法，结果是 64bit 的 Long 类型的 ID，有着全局唯一和有序递增的特点。   最高位是符号位，因为生成的 ID 总是正数，始终为 0，不可用。 41 位的时间序列，精确到毫秒级，41 位的长度可以使用 69 年。时间位还有一个很重要的作用是可以根据时间进行排序。 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mybatis&amp;shardingjdbc的雪花id解析">
+<meta property="og:url" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5.html">
+<meta property="og:site_name" content="Jason Lee Essay">
+<meta property="og:description" content="雪花 id 是一个 64bit 的 long 型 id。 snowflake 是 Twitter 开源的分布式 ID 生成算法，结果是 64bit 的 Long 类型的 ID，有着全局唯一和有序递增的特点。   最高位是符号位，因为生成的 ID 总是正数，始终为 0，不可用。 41 位的时间序列，精确到毫秒级，41 位的长度可以使用 69 年。时间位还有一个很重要的作用是可以根据时间进行排序。 1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5/YzwnbtadEoSf68xu0h1cSBden1e.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5/FJ77bIWMvoYOz8xXhTRcdKlbneb.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5/QlJ7bVD7iooc4Bx4WxPcVS8zntc.png">
+<meta property="og:image" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5/JHQybwDcIo7DphxHqIocm0bln3B.png">
+<meta property="article:published_time" content="2023-11-08T03:18:37.000Z">
+<meta property="article:modified_time" content="2024-03-15T05:34:14.644Z">
+<meta property="article:author" content="Jason Lee">
+<meta property="article:tag" content="Mybatis-plus">
+<meta property="article:tag" content="sharding-jdbc">
+<meta property="article:tag" content="Snowflake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5/YzwnbtadEoSf68xu0h1cSBden1e.png">
+
+
+<link rel="canonical" href="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://jasonlee529.github.io/2023/11/08/fd3901ef89f5.html","path":"2023/11/08/fd3901ef89f5.html","title":"Mybatis&shardingjdbc的雪花id解析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Mybatis&shardingjdbc的雪花id解析 | Jason Lee Essay</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?69f02f078fd202b54793c69f3596a63f 69f02f078fd202b54793c69f3596a63f"></script>
+
+
+
+
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1336715083812391"
+     crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-1336715083812391">
+<meta name="google-site-verification" content="DCecPF2mdIv3j__CgHKZ7KkdHn9F-6f4Grk8xYgVklE" />
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Jason Lee Essay</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Only dead fish go with the flow!</p>
+      <img class="custom-logo-image" src="/img/20221112195403.jpg" alt="Jason Lee Essay">
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories" rel="section">分类</a></li><li class="menu-item menu-item-about"><a href="/about" rel="section">关于</a></li><li class="menu-item menu-item-archives"><a href="/archives" rel="section">归档</a></li><li class="menu-item menu-item-tags"><a href="/tags" rel="section">标签</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E9%9B%AA%E8%8A%B1-id"><span class="nav-number">1.</span> <span class="nav-text">生成雪花 id</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%B7%E6%AE%B5%E5%88%86%E9%85%8D"><span class="nav-number">1.1.</span> <span class="nav-text">号段分配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mybatis-plus"><span class="nav-number">1.1.1.</span> <span class="nav-text">Mybatis-plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sharding-jdbc"><span class="nav-number">1.1.2.</span> <span class="nav-text">Sharding-jdbc</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E9%80%BB%E8%BE%91%E5%B7%AE%E5%BC%82"><span class="nav-number">1.2.</span> <span class="nav-text">生成逻辑差异</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mybatis-plus-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">Mybatis-plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sharding-jdbc-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">Sharding-jdbc</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E8%A7%A3%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">反解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mybatis-plus-2"><span class="nav-number">1.3.1.</span> <span class="nav-text">Mybatis-plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sharding-jdbc-2"><span class="nav-number">1.3.2.</span> <span class="nav-text">Sharding-jdbc</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jason Lee"
+      src="/img/1491256964.jpg">
+  <p class="site-author-name" itemprop="name">Jason Lee</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives">
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories">
+        <span class="site-state-item-count">49</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags">
+        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jasonlee529" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jasonlee529" rel="noopener me" target="_blank">GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.cnblogs.com/jason0529/" title="博客园 → http:&#x2F;&#x2F;www.cnblogs.com&#x2F;jason0529&#x2F;" rel="noopener me" target="_blank">博客园</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jasonlee529.github.io/2023/11/08/fd3901ef89f5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/1491256964.jpg">
+      <meta itemprop="name" content="Jason Lee">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Mybatis&shardingjdbc的雪花id解析 | Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Mybatis&shardingjdbc的雪花id解析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-08 11:18:37" itemprop="dateCreated datePublished" datetime="2023-11-08T11:18:37+08:00">2023-11-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Snowflake/" itemprop="url" rel="index"><span itemprop="name">Snowflake</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="firestore-visitors-count"></span>
+    </span>
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>雪花 id 是一个 64bit 的 long 型 id。</p>
+<p>snowflake 是 Twitter 开源的分布式 ID 生成算法，结果是 64bit 的 Long 类型的 ID，有着全局唯一和有序递增的特点。</p>
+<img src="/2023/11/08/fd3901ef89f5/YzwnbtadEoSf68xu0h1cSBden1e.png" class="" title="slug">
+<ul>
+<li>最高位是符号位，因为生成的 ID 总是正数，始终为 0，不可用。</li>
+<li>41 位的时间序列，精确到毫秒级，41 位的长度可以使用 69 年。时间位还有一个很重要的作用是可以根据时间进行排序。</li>
+<li>10 位的机器标识，10 位的长度最多支持部署 1024 个节点。</li>
+<li>12 位的计数序列号，序列号即一系列的自增 ID，可以支持同一节点同一毫秒生成多个 ID 序号，12 位的计数序列号支持每个节点每毫秒产生 4096 个 ID 序号。<br>今天我们来探究下 2 种常用 jar 包里面的 snowflake 的实现差异。<br>除了标准实现有很多种实现方式，不同方式的实现有不同的差异，主要体现在时间、数据中心、workId、sequence 的 4 段长度差异上。</li>
+</ul>
+<h1 id="生成雪花-id"><a href="#生成雪花-id" class="headerlink" title="生成雪花 id"></a>生成雪花 id</h1><h2 id="号段分配"><a href="#号段分配" class="headerlink" title="号段分配"></a>号段分配</h2><h3 id="Mybatis-plus"><a href="#Mybatis-plus" class="headerlink" title="Mybatis-plus"></a>Mybatis-plus</h3><p>mybatis-plus 自带了 IdentifierGenerator 的接口，提供了 ImadcnIdentifierGenerator 和 DefaultIdentifierGenerator 两种实现。</p>
+<p>其中 DefaultIdentifierGenerator 是大多数情况的默认实现。</p>
+<p><img src="/2023/11/08/fd3901ef89f5/FJ77bIWMvoYOz8xXhTRcdKlbneb.png"></p>
+<p>mybatis-plus 的实现与原版实现相比加入了 datacenterId 的概念，而且也引入了基准时间 1288834974657L;</p>
+<table>
+<thead>
+<tr>
+<th>标志位</th>
+<th>时间</th>
+<th>datacenterId</th>
+<th>workId</th>
+<th>sequence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>41</td>
+<td>5</td>
+<td>5</td>
+<td>12</td>
+</tr>
+</tbody></table>
+<h3 id="Sharding-jdbc"><a href="#Sharding-jdbc" class="headerlink" title="Sharding-jdbc"></a>Sharding-jdbc</h3><p>sharding 的实现类叫做：SnowflakeShardingKeyGenerator</p>
+<p><img src="/2023/11/08/fd3901ef89f5/QlJ7bVD7iooc4Bx4WxPcVS8zntc.png"></p>
+<p>sharding 的实现与原版实现相比没有特别差异，而且基准时间也有差异</p>
+<p><img src="/2023/11/08/fd3901ef89f5/JHQybwDcIo7DphxHqIocm0bln3B.png"></p>
+<table>
+<thead>
+<tr>
+<th>标志位</th>
+<th>时间</th>
+<th>workId</th>
+<th>sequence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>41</td>
+<td>10</td>
+<td>12</td>
+</tr>
+</tbody></table>
+<h2 id="生成逻辑差异"><a href="#生成逻辑差异" class="headerlink" title="生成逻辑差异"></a>生成逻辑差异</h2><h3 id="Mybatis-plus-1"><a href="#Mybatis-plus-1" class="headerlink" title="Mybatis-plus"></a>Mybatis-plus</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="type">long</span> <span class="title function_">nextId</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">timestamp</span> <span class="operator">=</span> timeGen();</span><br><span class="line">    <span class="comment">//闰秒</span></span><br><span class="line">    <span class="keyword">if</span> (timestamp &lt; lastTimestamp) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> lastTimestamp - timestamp;</span><br><span class="line">        <span class="keyword">if</span> (offset &lt;= <span class="number">5</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                wait(offset &lt;&lt; <span class="number">1</span>);</span><br><span class="line">                timestamp = timeGen();</span><br><span class="line">                <span class="keyword">if</span> (timestamp &lt; lastTimestamp) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(String.format(<span class="string">&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;</span>, offset));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(String.format(<span class="string">&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;</span>, offset));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (lastTimestamp == timestamp) &#123;</span><br><span class="line">        <span class="comment">// 相同毫秒内，序列号自增</span></span><br><span class="line">        sequence = (sequence + <span class="number">1</span>) &amp; sequenceMask;</span><br><span class="line">        <span class="keyword">if</span> (sequence == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 同一毫秒的序列数已经达到最大</span></span><br><span class="line">            timestamp = tilNextMillis(lastTimestamp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 不同毫秒内，序列号置为 1 - 3 随机数</span></span><br><span class="line">        sequence = ThreadLocalRandom.current().nextLong(<span class="number">1</span>, <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    lastTimestamp = timestamp;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 时间戳部分 | 数据中心部分 | 机器标识部分 | 序列号部分</span></span><br><span class="line">    <span class="keyword">return</span> ((timestamp - twepoch) &lt;&lt; timestampLeftShift)</span><br><span class="line">            | (datacenterId &lt;&lt; datacenterIdShift)</span><br><span class="line">            | (workerId &lt;&lt; workerIdShift)</span><br><span class="line">            | sequence;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最有一部分要记住，反解析时需使用。</p>
+<p>生成几个 id 看看：参数 &#x3D; datacenterId&#x3D;22&amp;workId&#x3D;11&amp;count&#x3D;10</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1722086321019465730</span>,</span><br><span class="line"><span class="number">1722086321019465731</span>,</span><br><span class="line"><span class="number">1722086321019465732</span>,</span><br><span class="line"><span class="number">1722086321019465733</span>,</span><br><span class="line"><span class="number">1722086321019465734</span>,</span><br><span class="line"><span class="number">1722086321019465735</span>,</span><br><span class="line"><span class="number">1722086321019465736</span>,</span><br><span class="line"><span class="number">1722086321019465737</span>,</span><br><span class="line"><span class="number">1722086321019465738</span>,</span><br><span class="line"><span class="number">1722086321019465739</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Sharding-jdbc-1"><a href="#Sharding-jdbc-1" class="headerlink" title="Sharding-jdbc"></a>Sharding-jdbc</h3><p>直接看代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> Comparable&lt;?&gt; generateKey() &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">currentMilliseconds</span> <span class="operator">=</span> timeService.getCurrentMillis();</span><br><span class="line">    <span class="keyword">if</span> (waitTolerateTimeDifferenceIfNeed(currentMilliseconds)) &#123;</span><br><span class="line">        currentMilliseconds = timeService.getCurrentMillis();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (lastMilliseconds == currentMilliseconds) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0L</span> == (sequence = (sequence + <span class="number">1</span>) &amp; SEQUENCE_MASK)) &#123;</span><br><span class="line">            currentMilliseconds = waitUntilNextTime(currentMilliseconds);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        vibrateSequenceOffset();</span><br><span class="line">        sequence = sequenceOffset;</span><br><span class="line">    &#125;</span><br><span class="line">    lastMilliseconds = currentMilliseconds;</span><br><span class="line">    <span class="keyword">return</span> ((currentMilliseconds - EPOCH) &lt;&lt; TIMESTAMP_LEFT_SHIFT_BITS) | (getWorkerId() &lt;&lt; WORKER_ID_LEFT_SHIFT_BITS) | sequence;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心在于最后一行，((currentMilliseconds - EPOCH) &lt;&lt; TIMESTAMP_LEFT_SHIFT_BITS) | (getWorkerId() &lt;&lt; WORKER_ID_LEFT_SHIFT_BITS) | sequence; 这个要记住，反解析时要用到。</p>
+<p>生成几个 id 看看：workId&#x3D;555&amp;type&#x3D;sharding&amp;count&#x3D;10</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">928955622318321665</span>,</span><br><span class="line"><span class="number">928955622318321666</span>,</span><br><span class="line"><span class="number">928955622318321667</span>,</span><br><span class="line"><span class="number">928955622318321668</span>,</span><br><span class="line"><span class="number">928955622318321669</span>,</span><br><span class="line"><span class="number">928955622318321670</span>,</span><br><span class="line"><span class="number">928955622318321671</span>,</span><br><span class="line"><span class="number">928955622318321672</span>,</span><br><span class="line"><span class="number">928955622318321673</span>,</span><br><span class="line"><span class="number">928955622318321674</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="反解析"><a href="#反解析" class="headerlink" title="反解析"></a>反解析</h2><h3 id="Mybatis-plus-2"><a href="#Mybatis-plus-2" class="headerlink" title="Mybatis-plus"></a>Mybatis-plus</h3><p>反解析就是把生成的逻辑反过来，按照号段分配逻辑，按位解析，注意：时间因为有基准时间，所以必须反向加减。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">buildMybatis</span><span class="params">(Map&lt;String, Object&gt; res, String sonwFlakeId)</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 机器标识位数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">twepoch</span> <span class="operator">=</span> <span class="number">1288834974657L</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 机器标识位数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">workerIdBits</span> <span class="operator">=</span> <span class="number">5L</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">datacenterIdBits</span> <span class="operator">=</span> <span class="number">5L</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 毫秒内自增位</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">sequenceBits</span> <span class="operator">=</span> <span class="number">12L</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">workerIdShift</span> <span class="operator">=</span> sequenceBits;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">datacenterIdShift</span> <span class="operator">=</span> sequenceBits + workerIdBits;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 时间戳左移动位</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">timestampLeftShift</span> <span class="operator">=</span> sequenceBits + workerIdBits + datacenterIdBits;</span><br><span class="line">    Map&lt;String, Object&gt; mybatisMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    res.put(<span class="string">&quot;mybatis-plus&quot;</span>, mybatisMap);</span><br><span class="line">    <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> sonwFlakeId.length();</span><br><span class="line">    <span class="type">int</span> <span class="variable">sequenceStart</span> <span class="operator">=</span> (<span class="type">int</span>) (len &lt; workerIdShift ? <span class="number">0</span> : len - workerIdShift);</span><br><span class="line">    <span class="type">int</span> <span class="variable">workerStart</span> <span class="operator">=</span> (<span class="type">int</span>) (len &lt; datacenterIdShift ? <span class="number">0</span> : len - datacenterIdShift);</span><br><span class="line">    <span class="type">int</span> <span class="variable">timeStart</span> <span class="operator">=</span> (<span class="type">int</span>) (len &lt; timestampLeftShift ? <span class="number">0</span> : len - timestampLeftShift);</span><br><span class="line">    <span class="type">String</span> <span class="variable">sequence</span> <span class="operator">=</span> sonwFlakeId.substring(sequenceStart, len);</span><br><span class="line">    <span class="type">String</span> <span class="variable">workerId</span> <span class="operator">=</span></span><br><span class="line">            sequenceStart == <span class="number">0</span> ? <span class="string">&quot;0&quot;</span> : sonwFlakeId.substring(workerStart, sequenceStart);</span><br><span class="line">    <span class="type">String</span> <span class="variable">dataCenterId</span> <span class="operator">=</span></span><br><span class="line">            workerStart == <span class="number">0</span> ? <span class="string">&quot;0&quot;</span> : sonwFlakeId.substring(timeStart, workerStart);</span><br><span class="line">    <span class="type">String</span> <span class="variable">time</span> <span class="operator">=</span> timeStart == <span class="number">0</span> ? <span class="string">&quot;0&quot;</span> : sonwFlakeId.substring(<span class="number">0</span>, timeStart);</span><br><span class="line">    <span class="type">int</span> <span class="variable">sequenceInt</span> <span class="operator">=</span> Integer.valueOf(sequence, <span class="number">2</span>);</span><br><span class="line">    mybatisMap.put(<span class="string">&quot;sequence&quot;</span>, sequenceInt);</span><br><span class="line">    <span class="type">int</span> <span class="variable">workerIdInt</span> <span class="operator">=</span> Integer.valueOf(workerId, <span class="number">2</span>);</span><br><span class="line">    mybatisMap.put(<span class="string">&quot;workerId&quot;</span>, workerIdInt);</span><br><span class="line">    <span class="type">int</span> <span class="variable">dataCenterIdInt</span> <span class="operator">=</span> Integer.valueOf(dataCenterId, <span class="number">2</span>);</span><br><span class="line">    mybatisMap.put(<span class="string">&quot;dataCenter&quot;</span>, dataCenterIdInt);</span><br><span class="line">    <span class="type">long</span> <span class="variable">diffTime</span> <span class="operator">=</span> Long.parseLong(time, <span class="number">2</span>);</span><br><span class="line">    <span class="type">long</span> <span class="variable">timeLong</span> <span class="operator">=</span> diffTime + twepoch;</span><br><span class="line">    <span class="type">String</span> <span class="variable">date</span> <span class="operator">=</span> DateFormatUtils.format(timeLong, <span class="string">&quot;yyyy-MM-dd HH:mm:ss&quot;</span>);</span><br><span class="line">    mybatisMap.put(<span class="string">&quot;date&quot;</span>, date);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：1722086321019465730 的解析结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;date&quot;</span>: <span class="string">&quot;2023-11-08 10:59:08&quot;</span>,</span><br><span class="line"><span class="string">&quot;sequence&quot;</span>: <span class="number">2</span>,</span><br><span class="line"><span class="string">&quot;workerId&quot;</span>: <span class="number">11</span>,</span><br><span class="line"><span class="string">&quot;dataCenter&quot;</span>: <span class="number">22</span></span><br></pre></td></tr></table></figure>
+
+<p>1722086321019465731 的解析结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;date&quot;</span>: <span class="string">&quot;2023-11-08 10:59:08&quot;</span>,</span><br><span class="line"><span class="string">&quot;sequence&quot;</span>: <span class="number">3</span>,</span><br><span class="line"><span class="string">&quot;workerId&quot;</span>: <span class="number">11</span>,</span><br><span class="line"><span class="string">&quot;dataCenter&quot;</span>: <span class="number">22</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Sharding-jdbc-2"><a href="#Sharding-jdbc-2" class="headerlink" title="Sharding-jdbc"></a>Sharding-jdbc</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">buildShardingJdbc</span><span class="params">(Map&lt;String, Object&gt; res, String sonwFlakeId)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">SEQUENCE_BITS</span> <span class="operator">=</span> <span class="number">12L</span>;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">WORKER_ID_BITS</span> <span class="operator">=</span> <span class="number">10L</span>;</span><br><span class="line">    <span class="type">Calendar</span> <span class="variable">calendar</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">    calendar.set(<span class="number">2016</span>, Calendar.NOVEMBER, <span class="number">1</span>);</span><br><span class="line">    calendar.set(Calendar.HOUR_OF_DAY, <span class="number">0</span>);</span><br><span class="line">    calendar.set(Calendar.MINUTE, <span class="number">0</span>);</span><br><span class="line">    calendar.set(Calendar.SECOND, <span class="number">0</span>);</span><br><span class="line">    calendar.set(Calendar.MILLISECOND, <span class="number">0</span>);</span><br><span class="line">    <span class="type">Long</span> <span class="variable">EPOCH</span> <span class="operator">=</span> calendar.getTimeInMillis();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">WORKER_ID_LEFT_SHIFT_BITS</span> <span class="operator">=</span> SEQUENCE_BITS;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">TIMESTAMP_LEFT_SHIFT_BITS</span> <span class="operator">=</span> WORKER_ID_LEFT_SHIFT_BITS + WORKER_ID_BITS;</span><br><span class="line">    Map&lt;String, Object&gt; dataMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    res.put(<span class="string">&quot;sharding-jdbc&quot;</span>, dataMap);</span><br><span class="line">    <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> sonwFlakeId.length();</span><br><span class="line">    <span class="type">int</span> <span class="variable">sequenceStart</span> <span class="operator">=</span> (<span class="type">int</span>) (len &lt; SEQUENCE_BITS ? <span class="number">0</span> : len - SEQUENCE_BITS);</span><br><span class="line">    <span class="type">int</span> <span class="variable">workerStart</span> <span class="operator">=</span> (<span class="type">int</span>) (len &lt; TIMESTAMP_LEFT_SHIFT_BITS ? <span class="number">0</span></span><br><span class="line">            : len - TIMESTAMP_LEFT_SHIFT_BITS);</span><br><span class="line">    <span class="type">String</span> <span class="variable">sequence</span> <span class="operator">=</span> sonwFlakeId.substring(sequenceStart, len);</span><br><span class="line">    <span class="type">String</span> <span class="variable">workerId</span> <span class="operator">=</span></span><br><span class="line">            sequenceStart == <span class="number">0</span> ? <span class="string">&quot;0&quot;</span> : sonwFlakeId.substring(workerStart, sequenceStart);</span><br><span class="line">    <span class="type">String</span> <span class="variable">time</span> <span class="operator">=</span> workerStart == <span class="number">0</span> ? <span class="string">&quot;0&quot;</span> : sonwFlakeId.substring(<span class="number">0</span>, workerStart);</span><br><span class="line">    <span class="type">int</span> <span class="variable">sequenceInt</span> <span class="operator">=</span> Integer.valueOf(sequence, <span class="number">2</span>);</span><br><span class="line">    dataMap.put(<span class="string">&quot;sequence&quot;</span>, sequenceInt);</span><br><span class="line">    <span class="type">int</span> <span class="variable">workerIdInt</span> <span class="operator">=</span> Integer.valueOf(workerId, <span class="number">2</span>);</span><br><span class="line">    dataMap.put(<span class="string">&quot;workerId&quot;</span>, workerIdInt);</span><br><span class="line">    <span class="type">long</span> <span class="variable">diffTime</span> <span class="operator">=</span> Long.parseLong(time, <span class="number">2</span>);</span><br><span class="line">    <span class="type">long</span> <span class="variable">timeLong</span> <span class="operator">=</span> diffTime + EPOCH;</span><br><span class="line">    <span class="type">String</span> <span class="variable">date</span> <span class="operator">=</span> DateFormatUtils.format(timeLong, <span class="string">&quot;yyyy-MM-dd HH:mm:ss&quot;</span>);</span><br><span class="line">    dataMap.put(<span class="string">&quot;date&quot;</span>, date);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解析结果：928955622318321665</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;date&quot;</span>: <span class="string">&quot;2023-11-08 10:17:59&quot;</span>,</span><br><span class="line"><span class="string">&quot;sequence&quot;</span>: <span class="number">1</span>,</span><br><span class="line"><span class="string">&quot;workerId&quot;</span>: <span class="number">555</span></span><br></pre></td></tr></table></figure>
+
+<p>928955622318321666</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;date&quot;</span>: <span class="string">&quot;2023-11-08 10:17:59&quot;</span>,</span><br><span class="line"><span class="string">&quot;sequence&quot;</span>: <span class="number">2</span>,</span><br><span class="line"><span class="string">&quot;workerId&quot;</span>: <span class="number">555</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>经过上面的反解析可以发现 1 个隐藏规律：</p>
+<p>mybatis-plus 生成的 id 是以 1 开头的，而 sharding-jdbc 生成的是以 9 开头的，原因在于 2 个的时间基础不同。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/img/wechat.png" alt="Jason Lee 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/img/alipay.jpg" alt="Jason Lee 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class=""></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/img/wechat_sub.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Mybatis-plus/" rel="tag"># Mybatis-plus</a>
+              <a href="/tags/sharding-jdbc/" rel="tag"># sharding-jdbc</a>
+              <a href="/tags/Snowflake/" rel="tag"># Snowflake</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/10/31/1ef1bddf5779.html" rel="prev" title="SpringCloud配置中心优先级">
+                  <i class="fa fa-angle-left"></i> SpringCloud配置中心优先级
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/11/10/81c3c3760279.html" rel="next" title="隐私政策">
+                  隐私政策 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Jason Lee</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">40k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/jasonlee529" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.umd.js" integrity="sha256-oyhjPiYRWGXaAt+ny/mTMWOnN1GBoZDUQnzzgC7FRI4=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.5.0/mermaid.min.js","integrity":"sha256-K7oJiQlDulzl24ZUFOywuYme1JqBBvQzK6m8qHjt9Gk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-app-compat.js" integrity="sha256-kv9gfd+UUnUqqJ2d478LEHzOijuUbZOVdEkuXSMm4qM=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-firestore-compat.js" integrity="sha256-sS/hkEB7nn47hhc//PNKfXiRX2YMEe4rBqUIqEhMYA8=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="firestore" type="application/json">{"enable":true,"collection":"articles","apiKey":"AIzaSyCtIjc1ac9LEqDrmHibIZuxSJUEcC-dk3Y","projectId":"hexo-jason529"}</script>
+  <script src="/js/third-party/statistics/firestore.js"></script>
+
+
+
+
+</body>
+</html>

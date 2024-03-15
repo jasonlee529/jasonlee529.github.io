@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.0.0">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.css" integrity="sha256-vQkngPS8jiHHH0I6ABTZroZk8NPZ7b+MUReOFE9UsXQ=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"jasonlee529.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="内容来自 https:&#x2F;&#x2F;help.sonatype.com&#x2F;repomanager3&#x2F;bower-repositories#BowerRepositories-BrowsingBowerRepositoriesandSearchingPackagesnexus3.0版本不仅提供了maven的私服，还可以托管docker、npm、bower甚至是python的仓库，为搭建统一的私服平台提供了便利">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bower配置私服nexus3">
+<meta property="og:url" content="https://jasonlee529.github.io/2018/06/05/f6a96606b982.html">
+<meta property="og:site_name" content="Jason Lee Essay">
+<meta property="og:description" content="内容来自 https:&#x2F;&#x2F;help.sonatype.com&#x2F;repomanager3&#x2F;bower-repositories#BowerRepositories-BrowsingBowerRepositoriesandSearchingPackagesnexus3.0版本不仅提供了maven的私服，还可以托管docker、npm、bower甚至是python的仓库，为搭建统一的私服平台提供了便利">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-05T11:30:30.000Z">
+<meta property="article:modified_time" content="2024-03-15T05:34:14.652Z">
+<meta property="article:author" content="Jason Lee">
+<meta property="article:tag" content="bower">
+<meta property="article:tag" content="nexus">
+<meta property="article:tag" content="nexus3">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://jasonlee529.github.io/2018/06/05/f6a96606b982.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://jasonlee529.github.io/2018/06/05/f6a96606b982.html","path":"2018/06/05/f6a96606b982.html","title":"bower配置私服nexus3"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>bower配置私服nexus3 | Jason Lee Essay</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?69f02f078fd202b54793c69f3596a63f 69f02f078fd202b54793c69f3596a63f"></script>
+
+
+
+
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1336715083812391"
+     crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-1336715083812391">
+<meta name="google-site-verification" content="DCecPF2mdIv3j__CgHKZ7KkdHn9F-6f4Grk8xYgVklE" />
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Jason Lee Essay</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Only dead fish go with the flow!</p>
+      <img class="custom-logo-image" src="/img/20221112195403.jpg" alt="Jason Lee Essay">
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories" rel="section">分类</a></li><li class="menu-item menu-item-about"><a href="/about" rel="section">关于</a></li><li class="menu-item menu-item-archives"><a href="/archives" rel="section">归档</a></li><li class="menu-item menu-item-tags"><a href="/tags" rel="section">标签</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Bower-%E4%BB%93%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">Bower 仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.0.0.0.1.</span> <span class="nav-text">* 1.简介</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-%E4%BB%A3%E7%90%86%E4%BB%93%E5%BA%93"><span class="nav-number">1.0.0.0.2.</span> <span class="nav-text">* 2.代理仓库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-%E6%9C%AC%E5%9C%B0%E7%A7%81%E6%9C%8D%E4%BB%93%E5%BA%93"><span class="nav-number">1.0.0.0.3.</span> <span class="nav-text">* 3.本地私服仓库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-%E5%85%AC%E5%BC%80%E4%BB%93%E5%BA%93%E7%BB%84"><span class="nav-number">1.0.0.0.4.</span> <span class="nav-text">* 4.公开仓库组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-%E5%AE%89%E8%A3%85bower"><span class="nav-number">1.0.0.0.5.</span> <span class="nav-text">* 5.安装bower</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-%E9%85%8D%E7%BD%AE%E7%A7%81%E6%9C%8D%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.0.0.0.6.</span> <span class="nav-text">* 6.配置私服下载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#7-%E6%B5%8F%E8%A7%88%E5%92%8C%E6%A3%80%E7%B4%A2%E4%BE%9D%E8%B5%96"><span class="nav-number">1.0.0.0.7.</span> <span class="nav-text">* 7.浏览和检索依赖</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#8-%E4%B8%8A%E4%BC%A0bower%E5%8C%85"><span class="nav-number">1.0.0.0.8.</span> <span class="nav-text">* 8.上传bower包</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2"><span class="nav-number">1.2.</span> <span class="nav-text">代理仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3"><span class="nav-number">1.3.</span> <span class="nav-text">本地私服仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4"><span class="nav-number">1.4.</span> <span class="nav-text">公开仓库组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5"><span class="nav-number">1.5.</span> <span class="nav-text">安装bower</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6"><span class="nav-number">1.6.</span> <span class="nav-text">配置私服下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7"><span class="nav-number">1.7.</span> <span class="nav-text">浏览和检索依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8"><span class="nav-number">1.8.</span> <span class="nav-text">上传bower包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93%EF%BC%9A"><span class="nav-number">1.9.</span> <span class="nav-text">小结：</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jason Lee"
+      src="/img/1491256964.jpg">
+  <p class="site-author-name" itemprop="name">Jason Lee</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives">
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories">
+        <span class="site-state-item-count">49</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags">
+        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jasonlee529" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jasonlee529" rel="noopener me" target="_blank">GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.cnblogs.com/jason0529/" title="博客园 → http:&#x2F;&#x2F;www.cnblogs.com&#x2F;jason0529&#x2F;" rel="noopener me" target="_blank">博客园</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jasonlee529.github.io/2018/06/05/f6a96606b982.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/1491256964.jpg">
+      <meta itemprop="name" content="Jason Lee">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="bower配置私服nexus3 | Jason Lee Essay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          bower配置私服nexus3
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-06-05 19:30:30" itemprop="dateCreated datePublished" datetime="2018-06-05T19:30:30+08:00">2018-06-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/nexus/" itemprop="url" rel="index"><span itemprop="name">nexus</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span class="firestore-visitors-count"></span>
+    </span>
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>916</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>内容来自 <a href="https://help.sonatype.com/repomanager3/bower-repositories#BowerRepositories-BrowsingBowerRepositoriesandSearchingPackages">https://help.sonatype.com/repomanager3/bower-repositories#BowerRepositories-BrowsingBowerRepositoriesandSearchingPackages</a><br>nexus3.0版本不仅提供了maven的私服，还可以托管docker、npm、bower甚至是python的仓库，为搭建统一的私服平台提供了便利。</p>
+</blockquote>
+<h1 id="Bower-仓库"><a href="#Bower-仓库" class="headerlink" title="Bower 仓库"></a>Bower 仓库</h1><h5 id="1-简介"><a href="#1-简介" class="headerlink" title="* 1.简介"></a>* <a href="#1">1.简介</a></h5><h5 id="2-代理仓库"><a href="#2-代理仓库" class="headerlink" title="* 2.代理仓库"></a>* <a href="#2">2.代理仓库</a></h5><h5 id="3-本地私服仓库"><a href="#3-本地私服仓库" class="headerlink" title="* 3.本地私服仓库"></a>* <a href="#3">3.本地私服仓库</a></h5><h5 id="4-公开仓库组"><a href="#4-公开仓库组" class="headerlink" title="* 4.公开仓库组"></a>* <a href="#4">4.公开仓库组</a></h5><h5 id="5-安装bower"><a href="#5-安装bower" class="headerlink" title="* 5.安装bower"></a>* <a href="#5">5.安装bower</a></h5><h5 id="6-配置私服下载"><a href="#6-配置私服下载" class="headerlink" title="* 6.配置私服下载"></a>* <a href="#6">6.配置私服下载</a></h5><h5 id="7-浏览和检索依赖"><a href="#7-浏览和检索依赖" class="headerlink" title="* 7.浏览和检索依赖"></a>* <a href="#7">7.浏览和检索依赖</a></h5><h5 id="8-上传bower包"><a href="#8-上传bower包" class="headerlink" title="* 8.上传bower包"></a>* <a href="#8">8.上传bower包</a></h5><h2 id="1">简介</h2>
+ Bower是一个前端包管理工具。
+
+<p>NexusOSS是一个强大的Maven仓库管理器，它极大地简化了自己内部仓库的维护和外部仓库的访问。利用Nexus你可以只在一个地方就能够完全控制访问和部署在你所维护仓库中的每个Artifact。Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据。3.0版本之后加入了npm、bower、docker还有.net的仓库管理。</p>
+<h2 id="2">代理仓库</h2>
+NexusOss可以对bower的外部仓库进行代理，比如代理官方库：https://registry.bower.io 。在官方库速度较慢的情况下非常好用。
+
+<p>创建bower代理库的步骤：</p>
+<ul>
+<li>选择创建repository,类型为bower(proxy)</li>
+<li>定义仓库名称：bower-proxy</li>
+<li>定义代理的仓库地址，例如官方仓库： <a href="https://registry.bower.io/">https://registry.bower.io</a></li>
+<li>选择合适的存储</li>
+</ul>
+<h2 id="3">本地私服仓库</h2>
+NexusOss支持创建本地私服用于管理bower包。私服仓库扮演了一个权威角色，定义包的URL和名称的关系。
+
+<p>创建本地私服仓库的操作步骤:</p>
+<ul>
+<li>选择创建repository,类型为bower(hosted)</li>
+<li>定义名称：bower-hosted</li>
+<li>选择合适的存储</li>
+</ul>
+<h2 id="4">公开仓库组</h2>
+推荐使用仓库组暴露Bower仓库地址。仓库组既可以暴露多个代理仓库和多个本地私服仓库，当代理仓库或者私服变动的时候不会影响到使用者。
+
+<p>创建步骤如下:</p>
+<ul>
+<li>选择创建repository,类型为bower(group)</li>
+<li>定义名称：bower-all</li>
+<li>选择合适的存储</li>
+<li>添加bower-proxy和bower-hosted仓库到组中<h2 id="5">安装bower</h2>
+通过npm安装：
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install -g bower </span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">bower -v</span></span><br><span class="line">1.7.7 </span><br></pre></td></tr></table></figure>
+使用Bower私服需要添加一个解析自定义URL的组件来完成解析NexusOss的工作。可以通过下面两种方式引入：
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g bower-nexus3-resolver</span><br></pre></td></tr></table></figure>
+或者引入到package.json中
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;devDependencies&quot;</span> <span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">   <span class="attr">&quot;bower-nexus3-resolver&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;*&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<h2 id="6">配置私服下载</h2>
+一旦配置了Bower私服，就需要配置.bowerrc文件来实现到私服的URL解析。一般需要配置.bowerrc文件，可以配置全局的.bowerrc，位于$HOME目录下，也可以配置在项目内部的.bowerrc文件中。
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;registry&quot;</span> <span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;search&quot;</span> <span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;http://localhost:8081/repository/bower-all&quot;</span> <span class="punctuation">]</span></span><br><span class="line">   <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"> <span class="attr">&quot;resolvers&quot;</span> <span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;bower-nexus3-resolver&quot;</span> <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+测试下效果：</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">bower install jquery</span></span><br><span class="line">bower jquery#*</span><br><span class="line">  not-cached nexus+http://localhost:8081/repository/bower-all/jquery#*</span><br><span class="line">bower jquery#*</span><br><span class="line">  resolve nexus+http://localhost:8081/repository/bower-all/jquery#*</span><br><span class="line">bower jquery#*</span><br><span class="line">  resolved nexus+http://localhost:8081/repository/bower-all/jquery#2.2.0</span><br><span class="line">bower jquery#^2.2.0  install jquery#2.2.0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">jquery#</span><span class="language-bash">2.2.0 bower_components/jquery</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7">浏览和检索依赖</h2>
+NexusOSS提供了网页检索和浏览包，当然也可以通过Bower的命令行参数来检索。
+
+<h2 id="8">上传bower包</h2>
+发布Bower包，需要配置.bowerrc文件，制定register的位置；需要指定包的git路径。
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;registry&quot;</span> <span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;search&quot;</span> <span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="string">&quot;http://192.168.1.62:8081/nexus/repository/bower-all&quot;</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;register&quot;</span> <span class="punctuation">:</span> <span class="string">&quot;http://admin:admin123@192.168.1.62:8081/nexus/repository/bower-hosted&quot;</span></span><br><span class="line">   <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">   <span class="attr">&quot;resolvers&quot;</span> <span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;bower-nexus3-resolver&quot;</span> <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+执行上传操作:
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bower register example-package git://gitserver/project.git</span><br></pre></td></tr></table></figure>
+测试安装:
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bower install example-package</span><br></pre></td></tr></table></figure>
+
+<h2 id="小结："><a href="#小结：" class="headerlink" title="小结："></a>小结：</h2><p>上次部分注意的是register的URL必须把授权参数填入，因为NexusOss侧需要权限验证，不写会一直报401的错误。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/img/wechat.png" alt="Jason Lee 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/img/alipay.jpg" alt="Jason Lee 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class=""></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/img/wechat_sub.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/bower/" rel="tag"># bower</a>
+              <a href="/tags/nexus/" rel="tag"># nexus</a>
+              <a href="/tags/nexus3/" rel="tag"># nexus3</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/06/01/7efe2d1f43ac.html" rel="prev" title="k8s踩坑记第1篇--rc无法创建">
+                  <i class="fa fa-angle-left"></i> k8s踩坑记第1篇--rc无法创建
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/06/048dcfc8ea8f.html" rel="next" title="k8s踩坑记第2篇--3个IP的故事">
+                  k8s踩坑记第2篇--3个IP的故事 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Jason Lee</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">40k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/jasonlee529" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.24/fancybox/fancybox.umd.js" integrity="sha256-oyhjPiYRWGXaAt+ny/mTMWOnN1GBoZDUQnzzgC7FRI4=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.5.0/mermaid.min.js","integrity":"sha256-K7oJiQlDulzl24ZUFOywuYme1JqBBvQzK6m8qHjt9Gk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-app-compat.js" integrity="sha256-kv9gfd+UUnUqqJ2d478LEHzOijuUbZOVdEkuXSMm4qM=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.4.0/firebase-firestore-compat.js" integrity="sha256-sS/hkEB7nn47hhc//PNKfXiRX2YMEe4rBqUIqEhMYA8=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="firestore" type="application/json">{"enable":true,"collection":"articles","apiKey":"AIzaSyCtIjc1ac9LEqDrmHibIZuxSJUEcC-dk3Y","projectId":"hexo-jason529"}</script>
+  <script src="/js/third-party/statistics/firestore.js"></script>
+
+
+
+
+</body>
+</html>
